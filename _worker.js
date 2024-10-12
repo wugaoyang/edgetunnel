@@ -174,7 +174,7 @@ async function _worker(env, request) {
  */
 async function getSubInfo(request, UA, url, env, userAgent) {
 	await sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-	const vlessConfig = await getVLESSConfig(userID, request.headers.get('Host'), sub, UA, RproxyIP, url);
+	const vlessConfig = await SubUtils.getVLESSConfig(userID, request.headers.get('Host'), sub, UA, RproxyIP, url);
 	const now = Date.now();
 	//const timestamp = Math.floor(now / 1000);
 	const today = new Date(now);
@@ -187,13 +187,13 @@ async function getSubInfo(request, UA, url, env, userAgent) {
 		const email = env.CFEMAIL;
 		const key = env.CFKEY;
 		const accountIndex = env.CFID || 0;
-		const accountId = await getAccountId(email, key);
+		const accountId = await SubUtils.getAccountId(email, key);
 		if (accountId){
 			const now = new Date()
 			now.setUTCHours(0, 0, 0, 0)
 			const startDate = now.toISOString()
 			const endDate = new Date().toISOString();
-			const Sum = await getSum(accountId, accountIndex, email, key, startDate, endDate);
+			const Sum = await SubUtils.getSum(accountId, accountIndex, email, key, startDate, endDate);
 			pagesSum = Sum[0];
 			workersSum = Sum[1];
 			total = 102400 ;
