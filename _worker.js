@@ -174,7 +174,7 @@ async function _worker(env, request) {
  */
 async function getSubInfo(request, UA, url, env, userAgent) {
 	await sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-	const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), sub, UA, AppParam.RproxyIP, url);
+	const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, UA, AppParam.RproxyIP, url);
 	const now = Date.now();
 	//const timestamp = Math.floor(now / 1000);
 	const today = new Date(now);
