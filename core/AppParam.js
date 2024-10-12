@@ -10,8 +10,8 @@ export default class AppParam {
     static proxyIP = '142.171.140.152';
 
     static sub = '';// 避免项目被滥用，现已取消内置订阅器
-    // static subconverter = 'SUBAPI.fxxk.dedyn.io';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
-    static subconverter = 'psub.tech-site.us.kg';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
+    static subconverter = 'SUBAPI.fxxk.dedyn.io';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
+    // static subconverter = 'psub.tech-site.us.kg';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
     // static subconfig = "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini"; //订阅配置文件
     static subconfig = "https://text.tech-site.us.kg/ACL4SSR_Online_Mini_MultiMode.ini?token=ADMIN"; //订阅配置文件
     static subProtocol = 'https';
