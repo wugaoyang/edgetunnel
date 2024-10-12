@@ -2,7 +2,7 @@ import CommonUtils from './utils/CommonUtils';
 
 import AppParam from './core/AppParam';
 import SubUtils from './utils/SubUtils';
-import { vlessOverWSHandler } from './core/SubService';
+import {sendMessage, vlessOverWSHandler} from './core/SubService';
 
 
 if (!CommonUtils.isValidUUID(AppParam.userID)) {
