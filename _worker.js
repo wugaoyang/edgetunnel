@@ -173,50 +173,50 @@ async function _worker(env, request) {
  * @param userAgent
  */
 async function getSubInfo(request, UA, url, env, userAgent) {
-	await sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-	const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, UA, AppParam.RproxyIP, url);
+	await sendMessage(`#获取订阅 ${FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+	const vlessConfig = await getVLESSConfig(userID, request.headers.get('Host'), sub, UA, RproxyIP, url);
 	const now = Date.now();
 	//const timestamp = Math.floor(now / 1000);
 	const today = new Date(now);
 	today.setHours(0, 0, 0, 0);
-	const UD = Math.floor(((now - today.getTime()) / 86400000) * 24 * 1099511627776 / 2);
+	const UD = Math.floor(((now - today.getTime())/86400000) * 24 * 1099511627776 / 2);
 	let pagesSum = UD;
 	let workersSum = UD;
-	let total = 24 * 1099511627776;
-	if (env.CFEMAIL && env.CFKEY) {
+	let total = 24 * 1099511627776 ;
+	if (env.CFEMAIL && env.CFKEY){
 		const email = env.CFEMAIL;
 		const key = env.CFKEY;
 		const accountIndex = env.CFID || 0;
-		const accountId = await SubUtils.getAccountId(email, key);
-		if (accountId) {
-			const now = new Date();
-			now.setUTCHours(0, 0, 0, 0);
-			const startDate = now.toISOString();
+		const accountId = await getAccountId(email, key);
+		if (accountId){
+			const now = new Date()
+			now.setUTCHours(0, 0, 0, 0)
+			const startDate = now.toISOString()
 			const endDate = new Date().toISOString();
-			const Sum = await SubUtils.getSum(accountId, accountIndex, email, key, startDate, endDate);
+			const Sum = await getSum(accountId, accountIndex, email, key, startDate, endDate);
 			pagesSum = Sum[0];
 			workersSum = Sum[1];
-			total = 102400;
+			total = 102400 ;
 		}
 	}
-	console.log(`pagesSum: ${pagesSum}\nworkersSum: ${workersSum}\ntotal: ${total}`);
-	if (userAgent && userAgent.includes('mozilla')) {
+	//console.log(`pagesSum: ${pagesSum}\nworkersSum: ${workersSum}\ntotal: ${total}`);
+	if (userAgent && userAgent.includes('mozilla')){
 		return new Response(`${vlessConfig}`, {
 			status: 200,
 			headers: {
-				'Content-Type': 'text/plain;charset=utf-8',
-				'Profile-Update-Interval': '6',
-				'Subscription-Userinfo': `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${AppParam.expire}`
+				"Content-Type": "text/plain;charset=utf-8",
+				"Profile-Update-Interval": "6",
+				"Subscription-Userinfo": `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${expire}`,
 			}
 		});
 	} else {
 		return new Response(`${vlessConfig}`, {
 			status: 200,
 			headers: {
-				'Content-Disposition': `attachment; filename=${AppParam.FileName}; filename*=utf-8''${encodeURIComponent(AppParam.FileName)}`,
-				'Content-Type': 'text/plain;charset=utf-8',
-				'Profile-Update-Interval': '6',
-				'Subscription-Userinfo': `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${AppParam.expire}`
+				"Content-Disposition": `attachment; filename=${FileName}; filename*=utf-8''${encodeURIComponent(FileName)}`,
+				"Content-Type": "text/plain;charset=utf-8",
+				"Profile-Update-Interval": "6",
+				"Subscription-Userinfo": `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${expire}`,
 			}
 		});
 	}
