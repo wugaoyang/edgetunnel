@@ -41,7 +41,9 @@ export default {
                         return new Response('Not found', {status: 404});
                 }
             } else {
-                AppParam.proxyIP = url.searchParams.get('proxyip') || AppParam.proxyIP;
+                let proxyip = url.searchParams.get('proxyip');
+                if(proxyip =='null') proxyip ='';
+                AppParam.proxyIP = proxyip || AppParam.proxyIP;
                 if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
                     AppParam.proxyIP = pathName.split('/proxyip=')[1];
                 } else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
