@@ -160,13 +160,13 @@ export default class CommonUtils{
 	 * @returns {string} 恢复真实信息后的内容
 	 */
 	static revertFakeInfo(content, userID, hostName, isBase64) {
-		if (isBase64) content = atob(content);  // 如果内容是Base64编码的，先解码
-
-		// 使用正则表达式全局替换（'g'标志）
-		// 将所有出现的假用户ID和假主机名替换为真实的值
-		content = content.replace(new RegExp(AppParam.fakeUserID, 'g'), userID)
-			.replace(new RegExp(AppParam.fakeHostName, 'g'), hostName);
-		if (isBase64) content = btoa(content);  // 如果原内容是Base64编码的，处理完后再次编码
+		// if (isBase64) content = atob(content);  // 如果内容是Base64编码的，先解码
+		//
+		// // 使用正则表达式全局替换（'g'标志）
+		// // 将所有出现的假用户ID和假主机名替换为真实的值
+		// content = content.replace(new RegExp(AppParam.fakeUserID, 'g'), userID)
+		// 	.replace(new RegExp(AppParam.fakeHostName, 'g'), hostName);
+		// if (isBase64) content = btoa(content);  // 如果原内容是Base64编码的，处理完后再次编码
 		return content;
 	}
 	/**

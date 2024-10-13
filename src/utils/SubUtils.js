@@ -288,17 +288,14 @@ https://github.com/cmliu/edgetunnel
 				newAddressesapi = await this.getAddressesapi(AppParam.addressesapi);
 				newAddressescsv = await this.getAddressescsv('TRUE');
 				let protocol = CommonUtils.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
-
 				url = `${protocol}://${hostName}/${AppParam.fakeUserID}`;
 				if (hostName.includes("worker") || hostName.includes("notls") || AppParam.noTLS == 'true') url += '?notls';
 				// console.log(`虚假订阅: ${url}`);
 			}
 
 			if (!userAgent.includes(('CF-Workers-SUB').toLowerCase())){
-				let protocol = AppParam.subProtocol;
-				if(AppParam.subconverter.includes('localhost')){
-					protocol = AppParam.subProtocol2;
-				}
+				let protocol = CommonUtils.isLocalHost(AppParam.subconverter) ? AppParam.subProtocol2 : AppParam.subProtocol;
+
 				if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || ( _url.searchParams.has('clash') && !userAgent.includes('subconverter'))) {
 					url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 					isBase64 = false;
