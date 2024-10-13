@@ -253,13 +253,9 @@ https://github.com/cmliu/edgetunnel
 				AppParam.fakeHostName = `${AppParam.fakeHostName}.xyz`
 			}
 			// console.log(`虚假HOST: ${AppParam.fakeHostName}`);
-			let protocol1 = AppParam.subProtocol;
-			if(sub.includes("localhost")){
-				protocol1 = AppParam.subProtocol2;
-			}
+			let protocol1 = CommonUtils.getProtocol(sub);
 			let url = `${protocol1}://${sub}/sub?host=${AppParam.fakeHostName}&uuid=${AppParam.fakeUserID}&edgetunnel=cmliu&proxyip=${RproxyIP}`;
 			let isBase64 = true;
-
 			if (!sub || sub == ""){
 				if(hostName.includes('workers.dev') || hostName.includes('pages.dev')) {
 					if (AppParam.proxyhostsURL && (!AppParam.proxyhosts || AppParam.proxyhosts.length == 0)) {
@@ -287,7 +283,7 @@ https://github.com/cmliu/edgetunnel
 
 				newAddressesapi = await this.getAddressesapi(AppParam.addressesapi);
 				newAddressescsv = await this.getAddressescsv('TRUE');
-				let protocol = CommonUtils.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
+				let protocol = CommonUtils.getProtocol(hostName);
 				url = `${protocol}://${hostName}/${AppParam.fakeUserID}`;
 				if (hostName.includes("worker") || hostName.includes("notls") || AppParam.noTLS == 'true') url += '?notls';
 				// console.log(`虚假订阅: ${url}`);
@@ -308,10 +304,14 @@ https://github.com/cmliu/edgetunnel
 				if ((!sub || sub == "") && isBase64 == true) {
 					content = await this.subAddresses(AppParam.fakeHostName,AppParam.fakeUserID,AppParam.noTLS,newAddressesapi,newAddressescsv,newAddressesnotlsapi,newAddressesnotlscsv);
 				} else {
-					const response = await fetch(url);
+					const response = await fetch(url ,{
+						headers: {
+							'User-Agent': `${UA} CF-Workers-edgetunnel/cmliu`
+						}});
 					content = await response.text();
 				}
 				if (_url.pathname == `/${AppParam.fakeUserID}`) return content;
+
 				return CommonUtils.revertFakeInfo(content, userID, hostName, isBase64);
 
 			} catch (error) {

@@ -221,6 +221,9 @@ export default class CommonUtils{
 		}
 		return false;
 	}
+	static getProtocol(hostName = ''){
+		return  this.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
+	}
 	static urlSafeBase64Encode(input) {
 		return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 	}
