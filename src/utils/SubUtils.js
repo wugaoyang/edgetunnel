@@ -519,6 +519,7 @@ https://github.com/cmliu/edgetunnel
 		let notlsresponseBody ;
 		let url = new URL(request.url);
 		let proxyip = url.searchParams.get('proxyip');
+		proxyip = proxyip? proxyip : ''
 		let 最终路径 = `/?ed=2560&proxyip=${proxyip}` ;
 		if (noTLS == 'true'){
 			AppParam.addressesnotls = AppParam.addressesnotls.concat(newAddressesnotlsapi);
