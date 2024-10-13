@@ -112,7 +112,7 @@ async function initParam(request, env) {
 	AppParam.sub = env.SUB || AppParam.sub;
 	AppParam.subconverter = env.SUBAPI || AppParam.subconverter;
 	let cIndex = url.searchParams.get('cIndex');
-	AppParam.subconverter = AppParam.subconverters[cIndex] || env.SUBAPI || AppParam.subconverter
+	AppParam.subconverter = AppParam.subconverters[cIndex] || env.SUBAPI || AppParam.subconverters[0]
 	if (AppParam.subconverter.includes('http://')) {
 		AppParam.subconverter = AppParam.subconverter.split('//')[1];
 		AppParam.subProtocol = 'http';

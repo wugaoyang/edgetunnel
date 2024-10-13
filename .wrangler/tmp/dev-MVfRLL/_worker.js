@@ -588,10 +588,7 @@ https://github.com/cmliu/edgetunnel
           url += "?notls";
       }
       if (!userAgent.includes("CF-Workers-SUB".toLowerCase())) {
-        let protocol = AppParam.subProtocol;
-        if (AppParam.subconverter.includes("localhost")) {
-          protocol = AppParam.subProtocol2;
-        }
+        let protocol = CommonUtils.isLocalHost(AppParam.subconverter) ? AppParam.subProtocol2 : AppParam.subProtocol;
         if (userAgent.includes("clash") && !userAgent.includes("nekobox") || _url.searchParams.has("clash") && !userAgent.includes("subconverter")) {
           url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
           isBase64 = false;
@@ -1450,7 +1447,7 @@ async function initParam(request, env) {
   AppParam.sub = env.SUB || AppParam.sub;
   AppParam.subconverter = env.SUBAPI || AppParam.subconverter;
   let cIndex = url.searchParams.get("cIndex");
-  AppParam.subconverter = AppParam.subconverters[cIndex] || env.SUBAPI || AppParam.subconverter;
+  AppParam.subconverter = AppParam.subconverters[cIndex] || env.SUBAPI || AppParam.subconverters[0];
   if (AppParam.subconverter.includes("http://")) {
     AppParam.subconverter = AppParam.subconverter.split("//")[1];
     AppParam.subProtocol = "http";

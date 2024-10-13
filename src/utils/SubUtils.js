@@ -295,7 +295,6 @@ https://github.com/cmliu/edgetunnel
 
 			if (!userAgent.includes(('CF-Workers-SUB').toLowerCase())){
 				let protocol = CommonUtils.isLocalHost(AppParam.subconverter) ? AppParam.subProtocol2 : AppParam.subProtocol;
-
 				if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || ( _url.searchParams.has('clash') && !userAgent.includes('subconverter'))) {
 					url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 					isBase64 = false;
@@ -313,7 +312,6 @@ https://github.com/cmliu/edgetunnel
 					content = await response.text();
 				}
 				if (_url.pathname == `/${AppParam.fakeUserID}`) return content;
-
 				return CommonUtils.revertFakeInfo(content, userID, hostName, isBase64);
 
 			} catch (error) {
