@@ -76,7 +76,7 @@ export default class SubUtils{
 
 		const 传输层协议 = 'ws';
 		const 伪装域名 = 域名地址;
-		const 路径 = '/?ed=2560';
+		const 路径 = '/?ed=2560&proxyip=';
 
 		let 传输层安全 = ['tls',true];
 		const SNI = 域名地址;
@@ -113,7 +113,7 @@ export default class SubUtils{
 	 * @param {string} UA
 	 * @returns {Promise<string>}
 	 */
-	static async getVLESSConfig(userID, hostName, sub, UA, RproxyIP, _url) {
+	static async getVLESSConfig(userID, hostName, sub, UA, RproxyIP, _url, request) {
 		this.checkSUB(hostName);
 		const userAgent = UA.toLowerCase();
 		const Config = this.配置信息(userID , hostName);
@@ -290,7 +290,7 @@ https://github.com/cmliu/edgetunnel
 			}
 
 			if (!userAgent.includes(('CF-Workers-SUB').toLowerCase())){
-				let protocol = CommonUtils.isLocalHost(AppParam.subconverter) ? AppParam.subProtocol2 : AppParam.subProtocol;
+				let protocol = CommonUtils.getProtocol(AppParam.subconverter);
 				if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || ( _url.searchParams.has('clash') && !userAgent.includes('subconverter'))) {
 					url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 					isBase64 = false;
@@ -302,18 +302,15 @@ https://github.com/cmliu/edgetunnel
 			try {
 				let content;
 				if ((!sub || sub == "") && isBase64 == true) {
-					content = await this.subAddresses(AppParam.fakeHostName,AppParam.fakeUserID,AppParam.noTLS,newAddressesapi,newAddressescsv,newAddressesnotlsapi,newAddressesnotlscsv);
+					content = await this.subAddresses(AppParam.fakeHostName,AppParam.fakeUserID,AppParam.noTLS,newAddressesapi,newAddressescsv,newAddressesnotlsapi,newAddressesnotlscsv, request);
 				} else {
 					const response = await fetch(url ,{
 						headers: {
 							'User-Agent': `${UA} CF-Workers-edgetunnel/cmliu`,
 						}});
 					content = await response.text();
-					console.log(url, content)
-					if(!response.ok){
-						return content
-					}
 				}
+				// console.log(url, content)
 				if (_url.pathname == `/${AppParam.fakeUserID}`) return content;
 				return CommonUtils.revertFakeInfo(content, userID, hostName, isBase64);
 			} catch (error) {
@@ -515,11 +512,14 @@ https://github.com/cmliu/edgetunnel
 		return newAddressescsv;
 	}
 
-	static subAddresses(host, UUID, noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi , newAddressesnotlscsv) {
+	static subAddresses(host, UUID, noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi , newAddressesnotlscsv, request) {
 		const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
 		AppParam.addresses = AppParam.addresses.concat(newAddressesapi);
 		AppParam.addresses = AppParam.addresses.concat(newAddressescsv);
 		let notlsresponseBody ;
+		let url = new URL(request.url);
+		let proxyip = url.searchParams.get('proxyip');
+		let 最终路径 = `/?ed=2560&proxyip=${proxyip}` ;
 		if (noTLS == 'true'){
 			AppParam.addressesnotls = AppParam.addressesnotls.concat(newAddressesnotlsapi);
 			AppParam.addressesnotls = AppParam.addressesnotls.concat(newAddressesnotlscsv);
@@ -568,7 +568,6 @@ https://github.com/cmliu/edgetunnel
 				if (port == "-1") port = "80";
 
 				let 伪装域名 = host ;
-				let 最终路径 = '/?ed=2560' ;
 				let 节点备注 = '';
 				const 协议类型 = atob(啥啥啥_写的这是啥啊);
 
@@ -626,7 +625,6 @@ https://github.com/cmliu/edgetunnel
 			if (port == "-1") port = "443";
 
 			let 伪装域名 = host ;
-			let 最终路径 = '/?ed=2560' ;
 			let 节点备注 = '';
 
 			if(AppParam.proxyhosts.length > 0 && (伪装域名.includes('.workers.dev') || 伪装域名.includes('pages.dev'))) {

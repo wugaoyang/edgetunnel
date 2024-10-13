@@ -23,10 +23,10 @@ export default {
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				switch (pathName) {
 					case '/':
-						return await _worker(env, request);
+						return await index(env, request);
 
 					case `/${AppParam.fakeUserID}`:
-						const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, 'CF-Workers-SUB', AppParam.RproxyIP, url);
+						const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, 'CF-Workers-SUB', AppParam.RproxyIP, url, request);
 						return new Response(`${fakeConfig}`, { status: 200 });
 
 					case `/${AppParam.userID}`:
@@ -157,7 +157,7 @@ async function initParam(request, env) {
  * @param env
  * @param request
  */
-async function _worker(env, request) {
+async function index(env, request) {
 	const envKey = env.URL302 ? 'URL302' : (env.URL ? 'URL' : null);
 	if (envKey) {
 		const URLs = await CommonUtils.ADD(env[envKey]);
@@ -178,7 +178,7 @@ async function _worker(env, request) {
  */
 async function getSubInfo(request, UA, url, env, userAgent) {
 	await sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
-	const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, UA, AppParam.RproxyIP, url);
+	const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, UA, AppParam.RproxyIP, url, request);
 	const now = Date.now();
 	//const timestamp = Math.floor(now / 1000);
 	const today = new Date(now);

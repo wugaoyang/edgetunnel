@@ -279,6 +279,9 @@ var CommonUtils = class {
     }
     return false;
   }
+  static getProtocol(hostName = "") {
+    return this.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
+  }
   static urlSafeBase64Encode(input) {
     return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
@@ -350,7 +353,7 @@ var SubUtils = class {
     const \u52A0\u5BC6\u65B9\u5F0F = "none";
     const \u4F20\u8F93\u5C42\u534F\u8BAE = "ws";
     const \u4F2A\u88C5\u57DF\u540D = \u57DF\u540D\u5730\u5740;
-    const \u8DEF\u5F84 = "/?ed=2560";
+    const \u8DEF\u5F84 = "/?ed=2560&proxyip=";
     let \u4F20\u8F93\u5C42\u5B89\u5168 = ["tls", true];
     const SNI = \u57DF\u540D\u5730\u5740;
     const \u6307\u7EB9 = "randomized";
@@ -383,7 +386,7 @@ var SubUtils = class {
    * @param {string} UA
    * @returns {Promise<string>}
    */
-  static async getVLESSConfig(userID, hostName, sub, UA, RproxyIP, _url) {
+  static async getVLESSConfig(userID, hostName, sub, UA, RproxyIP, _url, request) {
     this.checkSUB(hostName);
     const userAgent = UA.toLowerCase();
     const Config = this.\u914D\u7F6E\u4FE1\u606F(userID, hostName);
@@ -555,10 +558,7 @@ https://github.com/cmliu/edgetunnel
       } else {
         AppParam.fakeHostName = `${AppParam.fakeHostName}.xyz`;
       }
-      let protocol1 = AppParam.subProtocol;
-      if (sub.includes("localhost")) {
-        protocol1 = AppParam.subProtocol2;
-      }
+      let protocol1 = CommonUtils.getProtocol(sub);
       let url = `${protocol1}://${sub}/sub?host=${AppParam.fakeHostName}&uuid=${AppParam.fakeUserID}&edgetunnel=cmliu&proxyip=${RproxyIP}`;
       let isBase64 = true;
       if (!sub || sub == "") {
@@ -582,13 +582,13 @@ https://github.com/cmliu/edgetunnel
         }
         newAddressesapi = await this.getAddressesapi(AppParam.addressesapi);
         newAddressescsv = await this.getAddressescsv("TRUE");
-        let protocol = CommonUtils.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
+        let protocol = CommonUtils.getProtocol(hostName);
         url = `${protocol}://${hostName}/${AppParam.fakeUserID}`;
         if (hostName.includes("worker") || hostName.includes("notls") || AppParam.noTLS == "true")
           url += "?notls";
       }
       if (!userAgent.includes("CF-Workers-SUB".toLowerCase())) {
-        let protocol = CommonUtils.isLocalHost(AppParam.subconverter) ? AppParam.subProtocol2 : AppParam.subProtocol;
+        let protocol = CommonUtils.getProtocol(AppParam.subconverter);
         if (userAgent.includes("clash") && !userAgent.includes("nekobox") || _url.searchParams.has("clash") && !userAgent.includes("subconverter")) {
           url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
           isBase64 = false;
@@ -600,9 +600,13 @@ https://github.com/cmliu/edgetunnel
       try {
         let content;
         if ((!sub || sub == "") && isBase64 == true) {
-          content = await this.subAddresses(AppParam.fakeHostName, AppParam.fakeUserID, AppParam.noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi, newAddressesnotlscsv);
+          content = await this.subAddresses(AppParam.fakeHostName, AppParam.fakeUserID, AppParam.noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi, newAddressesnotlscsv, request);
         } else {
-          const response = await fetch(url);
+          const response = await fetch(url, {
+            headers: {
+              "User-Agent": `${UA} CF-Workers-edgetunnel/cmliu`
+            }
+          });
           content = await response.text();
         }
         if (_url.pathname == `/${AppParam.fakeUserID}`)
@@ -759,11 +763,14 @@ https://github.com/cmliu/edgetunnel
     }
     return newAddressescsv;
   }
-  static subAddresses(host, UUID, noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi, newAddressesnotlscsv) {
+  static subAddresses(host, UUID, noTLS, newAddressesapi, newAddressescsv, newAddressesnotlsapi, newAddressesnotlscsv, request) {
     const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
     AppParam.addresses = AppParam.addresses.concat(newAddressesapi);
     AppParam.addresses = AppParam.addresses.concat(newAddressescsv);
     let notlsresponseBody;
+    let url = new URL(request.url);
+    let proxyip = url.searchParams.get("proxyip");
+    let \u6700\u7EC8\u8DEF\u5F84 = `/?ed=2560&proxyip=${proxyip}`;
     if (noTLS == "true") {
       AppParam.addressesnotls = AppParam.addressesnotls.concat(newAddressesnotlsapi);
       AppParam.addressesnotls = AppParam.addressesnotls.concat(newAddressesnotlscsv);
@@ -808,7 +815,6 @@ https://github.com/cmliu/edgetunnel
         if (port == "-1")
           port = "80";
         let \u4F2A\u88C5\u57DF\u540D = host;
-        let \u6700\u7EC8\u8DEF\u5F84 = "/?ed=2560";
         let \u8282\u70B9\u5907\u6CE8 = "";
         const \u534F\u8BAE\u7C7B\u578B = atob(\u5565\u5565\u5565_\u5199\u7684\u8FD9\u662F\u5565\u554A);
         const vlessLink = `${\u534F\u8BAE\u7C7B\u578B}://${UUID}@${address}:${port}?encryption=none&security=&type=ws&host=${\u4F2A\u88C5\u57DF\u540D}&path=${encodeURIComponent(\u6700\u7EC8\u8DEF\u5F84)}#${encodeURIComponent(addressid + \u8282\u70B9\u5907\u6CE8)}`;
@@ -856,7 +862,6 @@ https://github.com/cmliu/edgetunnel
       if (port == "-1")
         port = "443";
       let \u4F2A\u88C5\u57DF\u540D = host;
-      let \u6700\u7EC8\u8DEF\u5F84 = "/?ed=2560";
       let \u8282\u70B9\u5907\u6CE8 = "";
       if (AppParam.proxyhosts.length > 0 && (\u4F2A\u88C5\u57DF\u540D.includes(".workers.dev") || \u4F2A\u88C5\u57DF\u540D.includes("pages.dev"))) {
         \u6700\u7EC8\u8DEF\u5F84 = `/${\u4F2A\u88C5\u57DF\u540D}${\u6700\u7EC8\u8DEF\u5F84}`;
@@ -881,6 +886,7 @@ import { connect } from "cloudflare:sockets";
 var WS_READY_STATE_OPEN = 1;
 var WS_READY_STATE_CLOSING = 2;
 async function vlessOverWSHandler(request) {
+  console.log(request);
   const webSocketPair = new WebSocketPair();
   const [client, webSocket] = Object.values(webSocketPair);
   webSocket.accept();
@@ -1377,9 +1383,9 @@ var worker_default = {
       if (!upgradeHeader || upgradeHeader !== "websocket") {
         switch (pathName) {
           case "/":
-            return await _worker(env, request);
+            return await index(env, request);
           case `/${AppParam.fakeUserID}`:
-            const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get("Host"), AppParam.sub, "CF-Workers-SUB", AppParam.RproxyIP, url);
+            const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get("Host"), AppParam.sub, "CF-Workers-SUB", AppParam.RproxyIP, url, request);
             return new Response(`${fakeConfig}`, { status: 200 });
           case `/${AppParam.userID}`:
             return await getSubInfo(request, UA, url, env, userAgent);
@@ -1493,7 +1499,7 @@ async function initParam(request, env) {
   return { UA, userAgent, upgradeHeader, url };
 }
 __name(initParam, "initParam");
-async function _worker(env, request) {
+async function index(env, request) {
   const envKey = env.URL302 ? "URL302" : env.URL ? "URL" : null;
   if (envKey) {
     const URLs = await CommonUtils.ADD(env[envKey]);
@@ -1502,12 +1508,12 @@ async function _worker(env, request) {
   }
   return new Response(JSON.stringify(request.cf, null, 4), { status: 200 });
 }
-__name(_worker, "_worker");
+__name(index, "index");
 async function getSubInfo(request, UA, url, env, userAgent) {
   await sendMessage(`#\u83B7\u53D6\u8BA2\u9605 ${AppParam.FileName}`, request.headers.get("CF-Connecting-IP"), `UA: ${UA}</tg-spoiler>
 \u57DF\u540D: ${url.hostname}
 <tg-spoiler>\u5165\u53E3: ${url.pathname + url.search}</tg-spoiler>`);
-  const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get("Host"), AppParam.sub, UA, AppParam.RproxyIP, url);
+  const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get("Host"), AppParam.sub, UA, AppParam.RproxyIP, url, request);
   const now = Date.now();
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);

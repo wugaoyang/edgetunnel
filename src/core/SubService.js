@@ -11,6 +11,7 @@ const WS_READY_STATE_CLOSING = 2;  // WebSocket 正在关闭过程中
  */
 export async function vlessOverWSHandler(request) {
 
+	console.log(request)
 	/** @type {import("@cloudflare/workers-types").WebSocket[]} */
 		// @ts-ignore
 	const webSocketPair = new WebSocketPair();
