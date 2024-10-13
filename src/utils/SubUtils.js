@@ -252,8 +252,12 @@ https://github.com/cmliu/edgetunnel
 			} else {
 				AppParam.fakeHostName = `${AppParam.fakeHostName}.xyz`
 			}
-			console.log(`虚假HOST: ${AppParam.fakeHostName}`);
-			let url = `${AppParam.subProtocol}://${sub}/sub?host=${AppParam.fakeHostName}&uuid=${AppParam.fakeUserID}&edgetunnel=cmliu&proxyip=${RproxyIP}`;
+			// console.log(`虚假HOST: ${AppParam.fakeHostName}`);
+			let protocol1 = AppParam.subProtocol;
+			if(sub.includes("localhost")){
+				protocol1 = AppParam.subProtocol2;
+			}
+			let url = `${protocol1}://${sub}/sub?host=${AppParam.fakeHostName}&uuid=${AppParam.fakeUserID}&edgetunnel=cmliu&proxyip=${RproxyIP}`;
 			let isBase64 = true;
 
 			if (!sub || sub == ""){
@@ -283,33 +287,34 @@ https://github.com/cmliu/edgetunnel
 
 				newAddressesapi = await this.getAddressesapi(AppParam.addressesapi);
 				newAddressescsv = await this.getAddressescsv('TRUE');
-				url = `https://${hostName}/${AppParam.fakeUserID}`;
+				let protocol = CommonUtils.isLocalHost(hostName) ? AppParam.subProtocol2 : AppParam.subProtocol;
+
+				url = `${protocol}://${hostName}/${AppParam.fakeUserID}`;
 				if (hostName.includes("worker") || hostName.includes("notls") || AppParam.noTLS == 'true') url += '?notls';
-				console.log(`虚假订阅: ${url}`);
+				// console.log(`虚假订阅: ${url}`);
 			}
 
 			if (!userAgent.includes(('CF-Workers-SUB').toLowerCase())){
+				let protocol = AppParam.subProtocol;
+				if(AppParam.subconverter.includes('localhost')){
+					protocol = AppParam.subProtocol2;
+				}
 				if ((userAgent.includes('clash') && !userAgent.includes('nekobox')) || ( _url.searchParams.has('clash') && !userAgent.includes('subconverter'))) {
-					url = `${AppParam.subProtocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+					url = `${protocol}://${AppParam.subconverter}/sub?target=clash&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 					isBase64 = false;
 				} else if (userAgent.includes('sing-box') || userAgent.includes('singbox') || (( _url.searchParams.has('singbox') || _url.searchParams.has('sb')) && !userAgent.includes('subconverter'))) {
-					url = `${AppParam.subProtocol}://${AppParam.subconverter}/sub?target=singbox&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
+					url = `${protocol}://${AppParam.subconverter}/sub?target=singbox&url=${encodeURIComponent(url)}&insert=false&config=${encodeURIComponent(AppParam.subconfig)}&emoji=true&list=false&tfo=false&scv=true&fdn=false&sort=false&new_name=true`;
 					isBase64 = false;
 				}
 			}
-
 			try {
 				let content;
 				if ((!sub || sub == "") && isBase64 == true) {
 					content = await this.subAddresses(AppParam.fakeHostName,AppParam.fakeUserID,AppParam.noTLS,newAddressesapi,newAddressescsv,newAddressesnotlsapi,newAddressesnotlscsv);
 				} else {
-					const response = await fetch(url ,{
-						headers: {
-							'User-Agent': `${UA} CF-Workers-edgetunnel/cmliu`
-						}});
+					const response = await fetch(url);
 					content = await response.text();
 				}
-
 				if (_url.pathname == `/${AppParam.fakeUserID}`) return content;
 
 				return CommonUtils.revertFakeInfo(content, userID, hostName, isBase64);
@@ -323,7 +328,7 @@ https://github.com/cmliu/edgetunnel
 		}
 	}
 
-  static 	async getAccountId(email, key) {
+  static async getAccountId(email, key) {
 		try {
 			const url = 'https://api.cloudflare.com/client/v4/accounts';
 			const headers = new Headers({
@@ -642,6 +647,7 @@ https://github.com/cmliu/edgetunnel
 		let base64Response = responseBody; // 重新进行 Base64 编码
 		if(noTLS == 'true') base64Response += `\n${notlsresponseBody}`;
 		return btoa(base64Response);
+		// return CommonUtils.urlSafeBase64Encode(base64Response)
 	}
 
 }

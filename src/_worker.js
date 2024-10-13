@@ -19,8 +19,9 @@ export default {
 	async fetch(request, env){
 		try {
 			const { UA, userAgent, upgradeHeader, url } = await initParam(request, env);
+			let pathName = url.pathname.toLowerCase();
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
-				switch (url.pathname.toLowerCase()) {
+				switch (pathName) {
 					case '/':
 						return await _worker(env, request);
 
@@ -37,9 +38,9 @@ export default {
 			} else {
 				AppParam.proxyIP = url.searchParams.get('proxyip') || AppParam.proxyIP;
 				if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
-					AppParam.proxyIP = url.pathname.toLowerCase().split('/proxyip=')[1];
+					AppParam.proxyIP = pathName.split('/proxyip=')[1];
 				} else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
-					AppParam.proxyIP = `proxyip.${url.pathname.toLowerCase().split('/proxyip.')[1]}`;
+					AppParam.proxyIP = `proxyip.${pathName.split('/proxyip.')[1]}`;
 				}
 				AppParam.socks5Address = url.searchParams.get('socks5') || AppParam.socks5Address;
 				if (new RegExp('/socks5=', 'i').test(url.pathname)) {

@@ -166,9 +166,7 @@ export default class CommonUtils{
 		// 将所有出现的假用户ID和假主机名替换为真实的值
 		content = content.replace(new RegExp(AppParam.fakeUserID, 'g'), userID)
 			.replace(new RegExp(AppParam.fakeHostName, 'g'), hostName);
-
 		if (isBase64) content = btoa(content);  // 如果原内容是Base64编码的，处理完后再次编码
-
 		return content;
 	}
 	/**
@@ -217,4 +215,17 @@ export default class CommonUtils{
 		return secondHex.toLowerCase();  // 返回小写的十六进制字符串
 	}
 
+	static isLocalHost(hostName = ''){
+		if(hostName && (hostName.includes("localhost") || hostName.includes("127.0.0.1"))){
+			return true;
+		}
+		return false;
+	}
+	static urlSafeBase64Encode(input) {
+		return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+	}
+	static urlSafeBase64Decode(input) {
+		const padded = input + "=".repeat((4 - input.length % 4) % 4);
+		return atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+	}
 }
