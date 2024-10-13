@@ -20,11 +20,6 @@ export default {
         try {
             const {UA, userAgent, upgradeHeader, url} = await initParam(request, env);
             let pathName = url.pathname.toLowerCase();
-            let hostName = url.hostname.toLowerCase();
-            let domain = hostName.substring(0, hostName.indexOf("."));
-            let proxyIp = AppParam.proxyIpMap[domain];
-            AppParam.proxyIP = proxyIp || AppParam.proxyIP;
-            console.log("proxyIp", hostName, domain, proxyIp)
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
                 switch (pathName) {
                     case '/':
@@ -42,8 +37,15 @@ export default {
                 }
             } else {
                 let proxyip = url.searchParams.get('proxyip');
-                if(proxyip =='null') proxyip ='';
-                AppParam.proxyIP = proxyip || AppParam.proxyIP;
+                if(proxyip) {
+                    AppParam.proxyIP = proxyip;
+                }else {
+                    let hostName = url.hostname.toLowerCase();
+                    let domain = hostName.substring(0, hostName.indexOf("."));
+                    let proxyIp = AppParam.proxyIpMap[domain];
+                    AppParam.proxyIP = proxyIp || AppParam.proxyIP;
+                }
+
                 if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
                     AppParam.proxyIP = pathName.split('/proxyip=')[1];
                 } else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
