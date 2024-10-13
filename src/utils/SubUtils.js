@@ -306,14 +306,16 @@ https://github.com/cmliu/edgetunnel
 				} else {
 					const response = await fetch(url ,{
 						headers: {
-							'User-Agent': `${UA} CF-Workers-edgetunnel/cmliu`
+							'User-Agent': `${UA} CF-Workers-edgetunnel/cmliu`,
 						}});
 					content = await response.text();
+					console.log(url, content)
+					if(!response.ok){
+						return content
+					}
 				}
 				if (_url.pathname == `/${AppParam.fakeUserID}`) return content;
-
 				return CommonUtils.revertFakeInfo(content, userID, hostName, isBase64);
-
 			} catch (error) {
 				console.error('Error fetching content:', error);
 				// @ts-ignore
