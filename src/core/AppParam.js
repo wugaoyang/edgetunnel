@@ -9,6 +9,8 @@ export default class AppParam {
 // 5.161.191.23
     static proxyIP = '142.171.140.152';
 
+    static proxyIpMap = {'us':'5.161.191.23'}
+
     static sub = '';// 避免项目被滥用，现已取消内置订阅器
     static subconverters = ['SUBAPI.fxxk.dedyn.io', 'psub.888005.xyz', 'psub.tech-site.us.kg','localhost:8081']
     static subconverter = 'SUBAPI.fxxk.dedyn.io';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
