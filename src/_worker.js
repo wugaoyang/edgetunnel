@@ -98,6 +98,10 @@ async function initParam(request, env) {
     const UA = request.headers.get('User-Agent') || 'null';
     const userAgent = UA.toLowerCase();
     AppParam.userID = (env.UUID || AppParam.userID).toLowerCase();
+    AppParam.proxyIpMap['us'] = env.US_PROXYIP || AppParam.proxyIpMap['us'];
+    AppParam.proxyIpMap['jp'] = env.JP_PROXYIP || AppParam.proxyIpMap['jp'];
+    AppParam.proxyIpMap['hk'] = env.HK_PROXYIP || AppParam.proxyIpMap['hk'];
+    AppParam.proxyIpMap['kr'] = env.KR_PROXYIP || AppParam.proxyIpMap['kr'];
 
     const url = new URL(request.url);
 
