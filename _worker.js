@@ -89,6 +89,8 @@ async function initParam(request, env) {
 	const userAgent = UA.toLowerCase();
 	AppParam.userID = (env.UUID || AppParam.userID).toLowerCase();
 
+	const url = new URL(request.url);
+
 	const currentDate = new Date();
 	currentDate.setHours(0, 0, 0, 0);
 	const timestamp = Math.ceil(currentDate.getTime() / 1000);
@@ -108,6 +110,8 @@ async function initParam(request, env) {
 
 	AppParam.sub = env.SUB || AppParam.sub;
 	AppParam.subconverter = env.SUBAPI || AppParam.subconverter;
+	let cIndex = url.searchParams.get('cIndex');
+	AppParam.subconverter = AppParam.subconverters[cIndex] || env.SUBAPI || AppParam.subconverter
 	if (AppParam.subconverter.includes('http://')) {
 		AppParam.subconverter = AppParam.subconverter.split('//')[1];
 		AppParam.subProtocol = 'http';
@@ -141,7 +145,6 @@ async function initParam(request, env) {
 	AppParam.ChatID = env.TGID || AppParam.ChatID;
 	if (env.GO2SOCKS5) AppParam.go2Socks5s = await CommonUtils.ADD(env.GO2SOCKS5);
 	const upgradeHeader = request.headers.get('Upgrade');
-	const url = new URL(request.url);
 	if (url.searchParams.has('sub') && url.searchParams.get('sub') !== '') AppParam.sub = url.searchParams.get('sub');
 	AppParam.FileName = env.SUBNAME || AppParam.FileName;
 	if (url.searchParams.has('notls')) AppParam.noTLS = 'true';
