@@ -2,7 +2,7 @@ import CommonUtils from './utils/CommonUtils';
 
 import AppParam from './core/AppParam';
 import SubUtils from './utils/SubUtils';
-import {sendMessage, vlessOverWSHandler} from './core/SubService';
+import SubService from './core/SubService';
 
 
 if (!CommonUtils.isValidUUID(AppParam.userID)) {
@@ -21,72 +21,63 @@ export default {
             const {UA, userAgent, upgradeHeader, url} = await initParam(request, env);
             let pathName = url.pathname.toLowerCase();
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
-                switch (pathName) {
-                    case '/':
-                        return await index(env, request);
-
-                    case `/${AppParam.fakeUserID}`:
-                        const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, 'CF-Workers-SUB', AppParam.RproxyIP, url, request);
-                        return new Response(`${fakeConfig}`, {status: 200});
-
-                    case `/${AppParam.userID}`:
-                        return await getSubInfo(request, UA, url, env, userAgent);
-
-                    default:
-                        return new Response('Not found', {status: 404});
-                }
+                //处理https请求
+                return await router(pathName, env, request, url, UA, userAgent);
             } else {
-                let proxyip = url.searchParams.get('proxyip');
-                if(proxyip) {
-                    AppParam.proxyIP = proxyip;
-                }else {
-                    let hostName = url.hostname.toLowerCase();
-                    let domain = hostName.substring(0, hostName.indexOf("."));
-                    let proxyIp = AppParam.proxyIpMap[domain];
-                    AppParam.proxyIP = proxyIp || AppParam.proxyIP;
-                }
-
-                if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
-                    AppParam.proxyIP = pathName.split('/proxyip=')[1];
-                } else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
-                    AppParam.proxyIP = `proxyip.${pathName.split('/proxyip.')[1]}`;
-                }
-                AppParam.socks5Address = url.searchParams.get('socks5') || AppParam.socks5Address;
-                if (new RegExp('/socks5=', 'i').test(url.pathname)) {
-                    AppParam.socks5Address = url.pathname.split('5=')[1];
-                } else if (new RegExp('/socks://', 'i').test(url.pathname) || new RegExp('/socks5://', 'i').test(url.pathname)) {
-                    AppParam.socks5Address = url.pathname.split('://')[1].split('#')[0];
-                    if (AppParam.socks5Address.includes('@')) {
-                        let userPassword = AppParam.socks5Address.split('@')[0];
-                        const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
-                        if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
-                        AppParam.socks5Address = `${userPassword}@${AppParam.socks5Address.split('@')[1]}`;
-                    }
-                }
-                if (AppParam.socks5Address) {
-                    try {
-                        AppParam.parsedSocks5Address = CommonUtils.socks5AddressParser(AppParam.socks5Address);
-                        AppParam.enableSocks = true;
-                    } catch (err) {
-                        /** @type {Error} */
-                        let e = err;
-                        // @ts-ignore
-                        console.log(e.toString());
-                        AppParam.enableSocks = false;
-                    }
-                } else {
-                    AppParam.enableSocks = false;
-                }
-                return await vlessOverWSHandler(request);
+                initProxyIp(url, pathName);
+                initSocks5Address(url);
+                //处理流量转发
+                return await SubService.vlessOverWSHandler(request);
             }
         } catch (err) {
             /** @type {Error} */
             let e = err;
-            // @ts-ignore
             return new Response(e.toString());
         }
     }
 };
+
+/**
+ * 首页
+ * @param env
+ * @param request
+ */
+async function index(env, request) {
+    const envKey = env.URL302 ? 'URL302' : (env.URL ? 'URL' : null);
+    if (envKey) {
+        const URLs = await CommonUtils.ADD(env[envKey]);
+        const URL = URLs[Math.floor(Math.random() * URLs.length)];
+        return envKey === 'URL302' ? Response.redirect(URL, 302) : fetch(new Request(URL, request));
+    }
+    return new Response(JSON.stringify(request.cf, null, 4), {status: 200});
+}
+
+/**
+ * 路由
+ * @param pathName
+ * @param env
+ * @param request
+ * @param url
+ * @param UA
+ * @param userAgent
+ * @returns {Promise<Response>}
+ */
+async function router(pathName, env, request, url, UA, userAgent) {
+    switch (pathName) {
+        case '/':
+            return await index(env, request);
+
+        case `/${AppParam.fakeUserID}`:
+            const fakeConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, 'CF-Workers-SUB', AppParam.RproxyIP, url, request);
+            return new Response(`${fakeConfig}`, {status: 200});
+
+        case `/${AppParam.userID}`:
+            return await getSubInfo(request, UA, url, env, userAgent);
+
+        default:
+            return new Response('Not found', {status: 404});
+    }
+}
 
 
 /**
@@ -166,20 +157,56 @@ async function initParam(request, env) {
 }
 
 /**
- * 首页
- * @param env
- * @param request
+ * 初始化Url里面的proxyIp
+ * @param url
+ * @param pathName
  */
-async function index(env, request) {
-    const envKey = env.URL302 ? 'URL302' : (env.URL ? 'URL' : null);
-    if (envKey) {
-        const URLs = await CommonUtils.ADD(env[envKey]);
-        const URL = URLs[Math.floor(Math.random() * URLs.length)];
-        return envKey === 'URL302' ? Response.redirect(URL, 302) : fetch(new Request(URL, request));
+function initProxyIp(url, pathName) {
+    let proxyip = url.searchParams.get('proxyip');
+    if (proxyip) {
+        AppParam.proxyIP = proxyip;
+    } else {
+        let hostName = url.hostname.toLowerCase();
+        let domain = hostName.substring(0, hostName.indexOf("."));
+        let proxyIp = AppParam.proxyIpMap[domain];
+        AppParam.proxyIP = proxyIp || AppParam.proxyIP;
     }
-    return new Response(JSON.stringify(request.cf, null, 4), {status: 200});
+
+    if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
+        AppParam.proxyIP = pathName.split('/proxyip=')[1];
+    } else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
+        AppParam.proxyIP = `proxyip.${pathName.split('/proxyip.')[1]}`;
+    }
 }
 
+function initSocks5Address(url) {
+    AppParam.socks5Address = url.searchParams.get('socks5') || AppParam.socks5Address;
+    if (new RegExp('/socks5=', 'i').test(url.pathname)) {
+        AppParam.socks5Address = url.pathname.split('5=')[1];
+    } else if (new RegExp('/socks://', 'i').test(url.pathname) || new RegExp('/socks5://', 'i').test(url.pathname)) {
+        AppParam.socks5Address = url.pathname.split('://')[1].split('#')[0];
+        if (AppParam.socks5Address.includes('@')) {
+            let userPassword = AppParam.socks5Address.split('@')[0];
+            const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
+            if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
+            AppParam.socks5Address = `${userPassword}@${AppParam.socks5Address.split('@')[1]}`;
+        }
+    }
+    if (AppParam.socks5Address) {
+        try {
+            AppParam.parsedSocks5Address = CommonUtils.socks5AddressParser(AppParam.socks5Address);
+            AppParam.enableSocks = true;
+        } catch (err) {
+            /** @type {Error} */
+            let e = err;
+            // @ts-ignore
+            console.log(e.toString());
+            AppParam.enableSocks = false;
+        }
+    } else {
+        AppParam.enableSocks = false;
+    }
+}
 
 /**
  * 获取订阅内容
@@ -190,7 +217,7 @@ async function index(env, request) {
  * @param userAgent
  */
 async function getSubInfo(request, UA, url, env, userAgent) {
-    await sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
+    await SubService.sendMessage(`#获取订阅 ${AppParam.FileName}`, request.headers.get('CF-Connecting-IP'), `UA: ${UA}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
     const vlessConfig = await SubUtils.getVLESSConfig(AppParam.userID, request.headers.get('Host'), AppParam.sub, UA, AppParam.RproxyIP, url, request);
     const now = Date.now();
     //const timestamp = Math.floor(now / 1000);
