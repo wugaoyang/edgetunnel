@@ -95,7 +95,7 @@ export default class SubService {
                 }
                 // 处理 TCP 出站连接
                 log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
-                SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+                await SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
             },
             close() {
                 log(`readableWebSocketStream 已关闭`, undefined);
@@ -462,7 +462,10 @@ export default class SubService {
                 tcpSocket = await connectAndWrite(addressRemote, portRemote, true);
             } else {
                 // 否则，尝试使用预设的代理 IP（如果有）或原始地址重试连接
-                if (!AppParam.proxyIP || AppParam.proxyIP == '') AppParam.proxyIP = atob('cHJveHlpcC5meHhrLmRlZHluLmlv');
+                if (!AppParam.proxyIP || AppParam.proxyIP == '') {
+                    // AppParam.proxyIP = atob('cHJveHlpcC5meHhrLmRlZHluLmlv');
+                    AppParam.proxyIP = "142.171.140.152"
+                }
                 tcpSocket = await connectAndWrite(AppParam.proxyIP || addressRemote, portRemote);
             }
             // 无论重试是否成功，都要关闭 WebSocket（可能是为了重新建立连接）
