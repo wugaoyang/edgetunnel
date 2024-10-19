@@ -3,7 +3,6 @@ import CommonUtils from './utils/CommonUtils';
 import AppParam from './core/AppParam';
 import SubUtils from './utils/SubUtils';
 import SubService from './core/SubService';
-import
 
 
 if (!CommonUtils.isValidUUID(AppParam.userID)) {
@@ -66,6 +65,7 @@ async function router(pathName, env, request, url, UA, userAgent) {
             return new Response('Not found', {status: 404});
     }
 }
+
 /**
  * 首页
  * @param env
