@@ -31,7 +31,7 @@ export default class SubService {
         const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 
         // 创建一个可读的 WebSocket 流，用于接收客户端数据
-        const readableWebSocketStream = this.makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+        const readableWebSocketStream = SubService.makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
         /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
             // 用于存储远程 Socket 的包装器
@@ -46,7 +46,7 @@ export default class SubService {
             async write(chunk, controller) {
                 if (isDns) {
                     // 如果是 DNS 查询，调用 DNS 处理函数
-                    return await this.handleDNSQuery(chunk, webSocket, null, log);
+                    return await SubService.handleDNSQuery(chunk, webSocket, null, log);
                 }
                 if (remoteSocketWapper.value) {
                     // 如果已有远程 Socket，直接写入数据
@@ -67,7 +67,7 @@ export default class SubService {
                     rawDataIndex,
                     vlessVersion = new Uint8Array([0, 0]),
                     isUDP,
-                } = this.processVlessHeader(chunk, AppParam.userID);
+                } = SubService.processVlessHeader(chunk, AppParam.userID);
                 // 设置地址和端口信息，用于日志
                 address = addressRemote;
                 portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? 'udp ' : 'tcp '} `;
@@ -92,11 +92,11 @@ export default class SubService {
 
                 if (isDns) {
                     // 如果是 DNS 查询，调用 DNS 处理函数
-                    return this.handleDNSQuery(rawClientData, webSocket, vlessResponseHeader, log);
+                    return SubService.handleDNSQuery(rawClientData, webSocket, vlessResponseHeader, log);
                 }
                 // 处理 TCP 出站连接
                 log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
-                this.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+                SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
             },
             close() {
                 log(`readableWebSocketStream 已关闭`, undefined);
@@ -148,7 +148,7 @@ export default class SubService {
                 // WebSocket 协议要求在每个方向上都要发送单独的关闭消息，以完全关闭 Socket
                 webSocketServer.addEventListener('close', () => {
                     // 客户端发送了关闭信号，需要关闭服务器端
-                    this.safeCloseWebSocket(webSocketServer);
+                    SubService.safeCloseWebSocket(webSocketServer);
                     // 如果流未被取消，则关闭控制器
                     if (readableStreamCancel) {
                         return;
@@ -194,7 +194,7 @@ export default class SubService {
                 log(`可读流被取消，原因是 ${reason}`);
                 readableStreamCancel = true;
                 // 安全地关闭 WebSocket
-                this.safeCloseWebSocket(webSocketServer);
+                SubService.safeCloseWebSocket(webSocketServer);
             }
         });
 
