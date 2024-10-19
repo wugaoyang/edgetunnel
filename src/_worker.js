@@ -28,7 +28,8 @@ export default {
                 initProxyIp(url, pathName);
                 initSocks5Address(url);
                 //处理流量转发
-                return await SubService.vlessOverWSHandler(request);
+                return await vlessOverWSHandler(request);
+                // return await SubService.vlessOverWSHandler(request);
             }
         } catch (err) {
             /** @type {Error} */
@@ -65,6 +66,7 @@ async function router(pathName, env, request, url, UA, userAgent) {
             return new Response('Not found', {status: 404});
     }
 }
+
 /**
  * 首页
  * @param env
@@ -265,4 +267,112 @@ async function getSubInfo(request, UA, url, env, userAgent) {
             }
         });
     }
+}
+
+async function vlessOverWSHandler(request) {
+
+    console.log(request)
+    /** @type {import("@cloudflare/workers-types").WebSocket[]} */
+        // @ts-ignore
+    const webSocketPair = new WebSocketPair();
+    const [client, webSocket] = Object.values(webSocketPair);
+
+    // 接受 WebSocket 连接
+    webSocket.accept();
+
+
+    let address = '';
+    let portWithRandomLog = '';
+
+    const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
+        console.log(`[${address}:${portWithRandomLog}] ${info}`, event || '');
+    };
+
+    // 获取早期数据头部，可能包含了一些初始化数据
+    const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
+
+    // 创建一个可读的 WebSocket 流，用于接收客户端数据
+    const readableWebSocketStream = this.makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+
+    /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
+        // 用于存储远程 Socket 的包装器
+    let remoteSocketWapper = {
+            value: null,
+        };
+    // 标记是否为 DNS 查询
+    let isDns = false;
+
+    // WebSocket 数据流向远程服务器的管道
+    readableWebSocketStream.pipeTo(new WritableStream({
+        async write(chunk, controller) {
+            if (isDns) {
+                // 如果是 DNS 查询，调用 DNS 处理函数
+                return await handleDNSQuery(chunk, webSocket, null, log);
+            }
+            if (remoteSocketWapper.value) {
+                // 如果已有远程 Socket，直接写入数据
+                // @ts-ignore
+                const writer = remoteSocketWapper.value.writable.getWriter()
+                await writer.write(chunk);
+                writer.releaseLock();
+                return;
+            }
+
+            // 处理 VLESS 协议头部
+            const {
+                hasError,
+                message,
+                addressType,
+                portRemote = 443,
+                addressRemote = '',
+                rawDataIndex,
+                vlessVersion = new Uint8Array([0, 0]),
+                isUDP,
+            } = processVlessHeader(chunk, AppParam.userID);
+            // 设置地址和端口信息，用于日志
+            address = addressRemote;
+            portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? 'udp ' : 'tcp '} `;
+            if (hasError) {
+                // 如果有错误，抛出异常
+                throw new Error(message);
+                return;
+            }
+            // 如果是 UDP 且端口不是 DNS 端口（53），则关闭连接
+            if (isUDP) {
+                if (portRemote === 53) {
+                    isDns = true;
+                } else {
+                    throw new Error('UDP 代理仅对 DNS（53 端口）启用');
+                    return;
+                }
+            }
+            // 构建 VLESS 响应头部
+            const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
+            // 获取实际的客户端数据
+            const rawClientData = chunk.slice(rawDataIndex);
+
+            if (isDns) {
+                // 如果是 DNS 查询，调用 DNS 处理函数
+                return handleDNSQuery(rawClientData, webSocket, vlessResponseHeader, log);
+            }
+            // 处理 TCP 出站连接
+            log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
+            handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+        },
+        close() {
+            log(`readableWebSocketStream 已关闭`, undefined);
+        },
+        abort(reason) {
+            log(`readableWebSocketStream 已中止`, JSON.stringify(reason));
+        },
+    })).catch((err) => {
+        log('readableWebSocketStream 管道错误', err);
+    });
+
+    // 返回一个 WebSocket 升级的响应
+    return new Response(null, {
+        status: 101,
+        // @ts-ignore
+        webSocket: client,
+    });
 }
