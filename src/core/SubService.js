@@ -30,9 +30,6 @@ export default class SubService {
         // 获取早期数据头部，可能包含了一些初始化数据
         const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 
-        // 创建一个可读的 WebSocket 流，用于接收客户端数据
-        const readableWebSocketStream = SubService.makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-
         /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
             // 用于存储远程 Socket 的包装器
         let remoteSocketWapper = {
@@ -41,6 +38,8 @@ export default class SubService {
         // 标记是否为 DNS 查询
         let isDns = false;
 
+        // 创建一个可读的 WebSocket 流，用于接收客户端数据
+        const readableWebSocketStream = SubService.makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
         // WebSocket 数据流向远程服务器的管道
         readableWebSocketStream.pipeTo(new WritableStream({
             async write(chunk, controller) {
@@ -96,7 +95,7 @@ export default class SubService {
                 }
                 // 处理 TCP 出站连接
                 log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
-                SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+                await SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
             },
             close() {
                 log(`readableWebSocketStream 已关闭`, undefined);
@@ -206,7 +205,7 @@ export default class SubService {
      * 处理 DNS 查询的函数
      * @param {ArrayBuffer} udpChunk - 客户端发送的 DNS 查询数据
      * @param {import("@cloudflare/workers-types").WebSocket} webSocket - 与客户端建立的 WebSocket 连接
-     * @param {ArrayBuffer} vlessResponseHeader - VLESS 协议的响应头部数据
+     * @param {Uint8Array} vlessResponseHeader - VLESS 协议的响应头部数据
      * @param {(string)=> void} log - 日志记录函数
      */
     static async handleDNSQuery(udpChunk, webSocket, vlessResponseHeader, log) {
