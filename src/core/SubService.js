@@ -194,7 +194,7 @@ export default class SubService {
                 log(`可读流被取消，原因是 ${reason}`);
                 readableStreamCancel = true;
                 // 安全地关闭 WebSocket
-                safeCloseWebSocket(webSocketServer);
+                this.safeCloseWebSocket(webSocketServer);
             }
         });
 
@@ -437,7 +437,7 @@ export default class SubService {
             log(`connected to ${address}:${port}`);
             //if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LmlwLjA5MDIyNy54eXo=')}`;
             // 如果指定使用 SOCKS5 代理，则通过 SOCKS5 协议连接；否则直接连接
-            const tcpSocket = socks ? await socks5Connect(addressType, address, port, log)
+            const tcpSocket = socks ? await SubService.socks5Connect(addressType, address, port, log)
                 : connect({
                     // @ts-ignore
                     hostname: address,
@@ -485,7 +485,7 @@ export default class SubService {
         // 当远程 Socket 就绪时，将其传递给 WebSocket
         // 建立从远程服务器到 WebSocket 的数据流，用于将远程服务器的响应发送回客户端
         // 如果连接失败或无数据，retry 函数将被调用进行重试
-        remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+        SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
     }
 
 
