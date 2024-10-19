@@ -148,7 +148,7 @@ export default class SubService {
                 // WebSocket 协议要求在每个方向上都要发送单独的关闭消息，以完全关闭 Socket
                 webSocketServer.addEventListener('close', () => {
                     // 客户端发送了关闭信号，需要关闭服务器端
-                    safeCloseWebSocket(webSocketServer);
+                    this.safeCloseWebSocket(webSocketServer);
                     // 如果流未被取消，则关闭控制器
                     if (readableStreamCancel) {
                         return;
