@@ -7,7 +7,8 @@ export default class AppParam {
 // cdn-all.xn--b6gac.eu.org,
 // workers.cloudflare.cyou'
 // 5.161.191.23
-    static proxyIP = '142.171.140.152';
+    static defaultProxyIp = '5.161.191.23'
+    static proxyIP = '5.161.191.23';
 
     static proxyIpMap = {'us':'5.161.191.23', 'jp':'45.32.25.171','hk':'62.72.163.109','kr':'144.24.78.162'}
 

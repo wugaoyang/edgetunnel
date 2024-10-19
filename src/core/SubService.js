@@ -464,7 +464,7 @@ export default class SubService {
                 // 否则，尝试使用预设的代理 IP（如果有）或原始地址重试连接
                 if (!AppParam.proxyIP || AppParam.proxyIP == '') {
                     // AppParam.proxyIP = atob('cHJveHlpcC5meHhrLmRlZHluLmlv');
-                    AppParam.proxyIP = "142.171.140.152"
+                    AppParam.proxyIP = AppParam.defaultProxyIp
                 }
                 tcpSocket = await connectAndWrite(AppParam.proxyIP || addressRemote, portRemote);
             }

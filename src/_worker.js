@@ -3,6 +3,7 @@ import CommonUtils from './utils/CommonUtils';
 import AppParam from './core/AppParam';
 import SubUtils from './utils/SubUtils';
 import SubService from './core/SubService';
+import
 
 
 if (!CommonUtils.isValidUUID(AppParam.userID)) {
@@ -89,6 +90,7 @@ async function index(env, request) {
 async function initParam(request, env) {
     const UA = request.headers.get('User-Agent') || 'null';
     const userAgent = UA.toLowerCase();
+    AppParam.defaultProxyIp = env.PROXYIP || AppParam.defaultProxyIp;
     AppParam.userID = (env.UUID || AppParam.userID).toLowerCase();
     AppParam.proxyIpMap['us'] = env.US_PROXYIP || AppParam.proxyIpMap['us'];
     AppParam.proxyIpMap['jp'] = env.JP_PROXYIP || AppParam.proxyIpMap['jp'];
