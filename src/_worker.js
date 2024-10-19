@@ -37,20 +37,6 @@ export default {
     }
 };
 
-/**
- * 首页
- * @param env
- * @param request
- */
-async function index(env, request) {
-    const envKey = env.URL302 ? 'URL302' : (env.URL ? 'URL' : null);
-    if (envKey) {
-        const URLs = await CommonUtils.ADD(env[envKey]);
-        const URL = URLs[Math.floor(Math.random() * URLs.length)];
-        return envKey === 'URL302' ? Response.redirect(URL, 302) : fetch(new Request(URL, request));
-    }
-    return new Response(JSON.stringify(request.cf, null, 4), {status: 200});
-}
 
 /**
  * 路由
@@ -77,6 +63,20 @@ async function router(pathName, env, request, url, UA, userAgent) {
         default:
             return new Response('Not found', {status: 404});
     }
+}
+/**
+ * 首页
+ * @param env
+ * @param request
+ */
+async function index(env, request) {
+    const envKey = env.URL302 ? 'URL302' : (env.URL ? 'URL' : null);
+    if (envKey) {
+        const URLs = await CommonUtils.ADD(env[envKey]);
+        const URL = URLs[Math.floor(Math.random() * URLs.length)];
+        return envKey === 'URL302' ? Response.redirect(URL, 302) : fetch(new Request(URL, request));
+    }
+    return new Response(JSON.stringify(request.cf, null, 4), {status: 200});
 }
 
 
