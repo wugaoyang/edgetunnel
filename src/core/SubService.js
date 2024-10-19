@@ -94,11 +94,11 @@ export default class SubService {
 
                 if (isDns) {
                     // 如果是 DNS 查询，调用 DNS 处理函数
-                    return handleDNSQuery(rawClientData, webSocket, vlessResponseHeader, log);
+                    return this.handleDNSQuery(rawClientData, webSocket, vlessResponseHeader, log);
                 }
                 // 处理 TCP 出站连接
                 log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
-                handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+                this.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
             },
             close() {
                 log(`readableWebSocketStream 已关闭`, undefined);
