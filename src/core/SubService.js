@@ -11,8 +11,6 @@ export default class SubService {
      * @param {import("@cloudflare/workers-types").Request} request
      */
     static async vlessOverWSHandler(request) {
-
-        console.log(request)
         /** @type {import("@cloudflare/workers-types").WebSocket[]} */
             // @ts-ignore
         const webSocketPair = new WebSocketPair();
@@ -48,7 +46,7 @@ export default class SubService {
             async write(chunk, controller) {
                 if (isDns) {
                     // 如果是 DNS 查询，调用 DNS 处理函数
-                    return await handleDNSQuery(chunk, webSocket, null, log);
+                    return await this.handleDNSQuery(chunk, webSocket, null, log);
                 }
                 if (remoteSocketWapper.value) {
                     // 如果已有远程 Socket，直接写入数据
@@ -69,7 +67,7 @@ export default class SubService {
                     rawDataIndex,
                     vlessVersion = new Uint8Array([0, 0]),
                     isUDP,
-                } = processVlessHeader(chunk, AppParam.userID);
+                } = this.processVlessHeader(chunk, AppParam.userID);
                 // 设置地址和端口信息，用于日志
                 address = addressRemote;
                 portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? 'udp ' : 'tcp '} `;
