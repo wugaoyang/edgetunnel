@@ -92,16 +92,15 @@ async function initParam(request, env) {
     AppParam.defaultProxyIp = env.PROXYIP || AppParam.defaultProxyIp;
     AppParam.userID = (env.UUID || AppParam.userID).toLowerCase();
     AppParam.proxyIpMap.set('us', env.US_PROXYIP || AppParam.proxyIpMap.get('us'));
-    AppParam.proxyIpMap.set('jp', env.US_PROXYIP || AppParam.proxyIpMap.get('jp'));
-    AppParam.proxyIpMap.set('hk', env.US_PROXYIP || AppParam.proxyIpMap.get('hk'));
-    AppParam.proxyIpMap.set('kr', env.US_PROXYIP || AppParam.proxyIpMap.get('kr'));
+    AppParam.proxyIpMap.set('jp', env.JP_PROXYIP || AppParam.proxyIpMap.get('jp'));
+    AppParam.proxyIpMap.set('hk', env.HK_PROXYIP || AppParam.proxyIpMap.get('hk'));
+    AppParam.proxyIpMap.set('kr', env.KR_PROXYIP || AppParam.proxyIpMap.get('kr'));
 
     const url = new URL(request.url);
 
     let hostName = url.hostname.toLowerCase();
     let domain = hostName.substring(0, hostName.indexOf("."));
-    let proxyIp = AppParam.proxyIpMap.get(domain);
-    AppParam.proxyIP = proxyIp || AppParam.proxyIP;
+    AppParam.proxyIP = AppParam.proxyIpMap.get(domain) || AppParam.proxyIP;
 
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
