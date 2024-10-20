@@ -107,13 +107,14 @@ async function initParam(request, env) {
     //console.log(`虚假UUID: ${fakeUserID}`); // 打印fakeID
 
     AppParam.proxyIP = env.PROXYIP || AppParam.proxyIP;
-    AppParam.proxyIPs = await CommonUtils.ADD(AppParam.proxyIP);
-    AppParam.proxyIP = AppParam.proxyIPs[Math.floor(Math.random() * AppParam.proxyIPs.length)];
 
 
     let hostName = url.hostname.toLowerCase();
     let domain = hostName.substring(0, hostName.indexOf("."));
     AppParam.proxyIP = domain || AppParam.proxyIP;
+
+    AppParam.proxyIPs = await CommonUtils.ADD(AppParam.proxyIP);
+    AppParam.proxyIP = AppParam.proxyIPs[Math.floor(Math.random() * AppParam.proxyIPs.length)];
 
     //console.log(proxyIP);
     AppParam.socks5Address = env.SOCKS5 || AppParam.socks5Address;
