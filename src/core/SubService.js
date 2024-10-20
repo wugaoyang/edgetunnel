@@ -11,6 +11,7 @@ export default class SubService {
      * @param {import("@cloudflare/workers-types").Request} request
      */
     static async vlessOverWSHandler(request) {
+        console.log("vlessOverWSHandler", request)
         /** @type {import("@cloudflare/workers-types").WebSocket[]} */
             // @ts-ignore
         const webSocketPair = new WebSocketPair();
@@ -95,7 +96,7 @@ export default class SubService {
                 }
                 // 处理 TCP 出站连接
                 log(`处理 TCP 出站连接 ${addressRemote}:${portRemote}`, undefined);
-                await SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+                SubService.handleTCPOutBound(remoteSocketWapper, addressType, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
             },
             close() {
                 log(`readableWebSocketStream 已关闭`, undefined);
@@ -476,7 +477,7 @@ export default class SubService {
                 SubService.safeCloseWebSocket(webSocket);
             })
             // 建立从远程 Socket 到 WebSocket 的数据流
-            await SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
+            SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
         }
 
         let useSocks = false;
@@ -487,7 +488,7 @@ export default class SubService {
         // 当远程 Socket 就绪时，将其传递给 WebSocket
         // 建立从远程服务器到 WebSocket 的数据流，用于将远程服务器的响应发送回客户端
         // 如果连接失败或无数据，retry 函数将被调用进行重试
-        await SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+        SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
     }
 
 
@@ -575,7 +576,7 @@ export default class SubService {
         // 2. Socket.readable 将关闭，但没有任何数据
         if (hasIncomingData === false && retry) {
             log(`retry`);
-            await retry(); // 调用重试函数，尝试重新建立连接
+            retry(); // 调用重试函数，尝试重新建立连接
         }
     }
 

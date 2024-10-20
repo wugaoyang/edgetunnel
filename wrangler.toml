@@ -1,8 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "edgetunnel"
+#name = "edgetunnel"
+name = "test-vless"
 main = "src/_worker.js"
 compatibility_date = "2023-05-18"
 compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ADDAPI = "https://cf-data-api.tech-site.workers.dev/api/db/bestIps"
 # 构建配置
 #build = {command = "npm run build",  cwd = ".",upload = {format = "service-worker", dir = "./dist" }}
 # Workers Logs
@@ -10,7 +14,7 @@ compatibility_flags = ["nodejs_compat"]
 # Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
 [observability]
 enabled = true
-
+head_sampling_rate = 0.01 # 1% sampling rate
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
 # rather than the end user may result in better performance.
