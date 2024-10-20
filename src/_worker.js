@@ -113,7 +113,7 @@ async function initParam(request, env) {
 
     let hostName = url.hostname.toLowerCase();
     let domain = hostName.substring(0, hostName.indexOf("."));
-    AppParam.proxyIP = AppParam.proxyIpMap.get(domain) || AppParam.proxyIP;
+    AppParam.proxyIP = domain || AppParam.proxyIP;
 
     //console.log(proxyIP);
     AppParam.socks5Address = env.SOCKS5 || AppParam.socks5Address;
@@ -171,7 +171,6 @@ async function initParam(request, env) {
  */
 function initProxyIp(url, pathName) {
     AppParam.proxyIP = url.searchParams.get('proxyip') || AppParam.proxyIP;
-
     if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
         AppParam.proxyIP = pathName.split('/proxyip=')[1];
     } else if (new RegExp('/proxyip.', 'i').test(url.pathname)) {
