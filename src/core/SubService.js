@@ -11,7 +11,6 @@ export default class SubService {
      * @param {import("@cloudflare/workers-types").Request} request
      */
     static async vlessOverWSHandler(request) {
-        console.log("vlessOverWSHandler", request)
         /** @type {import("@cloudflare/workers-types").WebSocket[]} */
             // @ts-ignore
         const webSocketPair = new WebSocketPair();
@@ -472,7 +471,7 @@ export default class SubService {
             // 无论重试是否成功，都要关闭 WebSocket（可能是为了重新建立连接）
             // @ts-ignore
             tcpSocket.closed.catch(error => {
-                console.log('retry tcpSocket closed error', error);
+                console.error('retry tcpSocket closed error', error);
             }).finally(() => {
                 SubService.safeCloseWebSocket(webSocket);
             })

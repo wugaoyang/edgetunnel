@@ -17,7 +17,6 @@ export default {
      * @returns {Promise<Response>}
      */
     async fetch(request, env) {
-        console.log("开始接入请求", request)
         try {
             const {UA, userAgent, upgradeHeader, url} = await initParam(request, env);
             let pathName = url.pathname.toLowerCase();
@@ -143,7 +142,7 @@ async function initParam(request, env) {
             /** @type {Error} */
             let e = err;
             // @ts-ignore
-            console.log(e.toString());
+            // console.log(e.toString());
             AppParam.RproxyIP = env.RPROXYIP || !AppParam.proxyIP ? 'true' : 'false';
             AppParam.enableSocks = false;
         }
@@ -201,7 +200,7 @@ function initSocks5Address(url) {
             /** @type {Error} */
             let e = err;
             // @ts-ignore
-            console.log(e.toString());
+            // console.log(e.toString());
             AppParam.enableSocks = false;
         }
     } else {
