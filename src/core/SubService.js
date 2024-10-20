@@ -567,7 +567,7 @@ export default class SubService {
                     error.stack || error
                 );
                 // 发生错误时安全地关闭 WebSocket
-                safeCloseWebSocket(webSocket);
+                SubService.safeCloseWebSocket(webSocket);
             });
 
         // 处理 Cloudflare 连接 Socket 的特殊错误情况
@@ -575,7 +575,7 @@ export default class SubService {
         // 2. Socket.readable 将关闭，但没有任何数据
         if (hasIncomingData === false && retry) {
             log(`retry`);
-            retry(); // 调用重试函数，尝试重新建立连接
+            await retry(); // 调用重试函数，尝试重新建立连接
         }
     }
 
