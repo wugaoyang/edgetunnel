@@ -111,7 +111,7 @@ async function initParam(request, env) {
 
     let hostName = url.hostname.toLowerCase();
     let domain = hostName.substring(0, hostName.indexOf("."));
-    AppParam.proxyIP = domain || AppParam.proxyIP;
+    AppParam.proxyIP = AppParam.proxyIpMap.get(domain) || AppParam.proxyIP;
 
     AppParam.proxyIPs = await CommonUtils.ADD(AppParam.proxyIP);
     AppParam.proxyIP = AppParam.proxyIPs[Math.floor(Math.random() * AppParam.proxyIPs.length)];
