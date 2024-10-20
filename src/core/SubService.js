@@ -473,10 +473,10 @@ export default class SubService {
             tcpSocket.closed.catch(error => {
                 console.log('retry tcpSocket closed error', error);
             }).finally(() => {
-                safeCloseWebSocket(webSocket);
+                SubService.safeCloseWebSocket(webSocket);
             })
             // 建立从远程 Socket 到 WebSocket 的数据流
-            remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
+            await SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
         }
 
         let useSocks = false;
@@ -487,7 +487,7 @@ export default class SubService {
         // 当远程 Socket 就绪时，将其传递给 WebSocket
         // 建立从远程服务器到 WebSocket 的数据流，用于将远程服务器的响应发送回客户端
         // 如果连接失败或无数据，retry 函数将被调用进行重试
-        SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+        await SubService.remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
     }
 
 
