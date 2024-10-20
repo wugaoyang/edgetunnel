@@ -98,6 +98,11 @@ async function initParam(request, env) {
 
     const url = new URL(request.url);
 
+    let hostName = url.hostname.toLowerCase();
+    let domain = hostName.substring(0, hostName.indexOf("."));
+    let proxyIp = AppParam.proxyIpMap.get(domain);
+    AppParam.proxyIP = proxyIp || AppParam.proxyIP;
+
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
     const timestamp = Math.ceil(currentDate.getTime() / 1000);
@@ -167,11 +172,6 @@ function initProxyIp(url, pathName) {
     let proxyip = url.searchParams.get('proxyip');
     if (proxyip) {
         AppParam.proxyIP = proxyip;
-    } else {
-        let hostName = url.hostname.toLowerCase();
-        let domain = hostName.substring(0, hostName.indexOf("."));
-        let proxyIp = AppParam.proxyIpMap.get(domain);
-        AppParam.proxyIP = proxyIp || AppParam.proxyIP;
     }
 
     if (new RegExp('/proxyip=', 'i').test(url.pathname)) {
