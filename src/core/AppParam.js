@@ -10,10 +10,10 @@ export default class AppParam {
     static defaultProxyIp = '5.161.191.23'
     static proxyIP = this.defaultProxyIp;
 
-    static proxyIpMap = {'us':'5.161.191.23', 'jp':'45.32.25.171','hk':'62.72.163.109','kr':'144.24.78.162'}
+    static proxyIpMap = new Map([['us', this.defaultProxyIp], ['jp', '45.32.25.171'], ['hk','62.72.163.109'], ['kr', '144.24.78.162']])
 
     static sub = '';// 避免项目被滥用，现已取消内置订阅器
-    static subconverters = ['SUBAPI.fxxk.dedyn.io', 'psub.888005.xyz', 'psub.tech-site.us.kg','localhost:8081']
+    static subconverters = ['SUBAPI.fxxk.dedyn.io', 'psub.888005.xyz', 'psub.tech-site.us.kg', 'localhost:8081']
     static subconverter = 'SUBAPI.fxxk.dedyn.io';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
     // static subconverter = 'psub.888005.xyz';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。
     // static subconverter = 'psub.tech-site.us.kg';// clash订阅转换后端，目前使用CM的订阅转换功能。自带虚假uuid和host订阅。

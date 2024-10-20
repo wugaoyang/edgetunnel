@@ -12,13 +12,12 @@ if (!CommonUtils.isValidUUID(AppParam.userID)) {
 export default {
     /**
      * @param {import('@cloudflare/workers-types').Request} request
-     * @param {{UUID: string, PROXYIP: string}} env
+     * @param {{UUID: string, PROXYIP: string, US_PROXYIP:string, JP_PROXYIP:string, HK_PROXYIP:string, KR_PROXYIP:string}} env
      * @param {import('@cloudflare/workers-types').ExecutionContext} ctx
      * @returns {Promise<Response>}
      */
     async fetch(request, env) {
         try {
-            console.log(1)
             const {UA, userAgent, upgradeHeader, url} = await initParam(request, env);
             let pathName = url.pathname.toLowerCase();
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
@@ -92,10 +91,10 @@ async function initParam(request, env) {
     const userAgent = UA.toLowerCase();
     AppParam.defaultProxyIp = env.PROXYIP || AppParam.defaultProxyIp;
     AppParam.userID = (env.UUID || AppParam.userID).toLowerCase();
-    AppParam.proxyIpMap['us'] = env.US_PROXYIP || AppParam.proxyIpMap['us'];
-    AppParam.proxyIpMap['jp'] = env.JP_PROXYIP || AppParam.proxyIpMap['jp'];
-    AppParam.proxyIpMap['hk'] = env.HK_PROXYIP || AppParam.proxyIpMap['hk'];
-    AppParam.proxyIpMap['kr'] = env.KR_PROXYIP || AppParam.proxyIpMap['kr'];
+    AppParam.proxyIpMap.set('us', env.US_PROXYIP || AppParam.proxyIpMap.get('us'));
+    AppParam.proxyIpMap.set('jp', env.US_PROXYIP || AppParam.proxyIpMap.get('jp'));
+    AppParam.proxyIpMap.set('hk', env.US_PROXYIP || AppParam.proxyIpMap.get('hk'));
+    AppParam.proxyIpMap.set('kr', env.US_PROXYIP || AppParam.proxyIpMap.get('kr'));
 
     const url = new URL(request.url);
 
@@ -171,7 +170,7 @@ function initProxyIp(url, pathName) {
     } else {
         let hostName = url.hostname.toLowerCase();
         let domain = hostName.substring(0, hostName.indexOf("."));
-        let proxyIp = AppParam.proxyIpMap[domain];
+        let proxyIp = AppParam.proxyIpMap.get(domain);
         AppParam.proxyIP = proxyIp || AppParam.proxyIP;
     }
 
