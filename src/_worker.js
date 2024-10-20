@@ -98,10 +98,6 @@ async function initParam(request, env) {
 
     const url = new URL(request.url);
 
-    let hostName = url.hostname.toLowerCase();
-    let domain = hostName.substring(0, hostName.indexOf("."));
-    AppParam.proxyIP = AppParam.proxyIpMap.get(domain) || AppParam.proxyIP;
-
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
     const timestamp = Math.ceil(currentDate.getTime() / 1000);
@@ -113,6 +109,12 @@ async function initParam(request, env) {
     AppParam.proxyIP = env.PROXYIP || AppParam.proxyIP;
     AppParam.proxyIPs = await CommonUtils.ADD(AppParam.proxyIP);
     AppParam.proxyIP = AppParam.proxyIPs[Math.floor(Math.random() * AppParam.proxyIPs.length)];
+
+
+    let hostName = url.hostname.toLowerCase();
+    let domain = hostName.substring(0, hostName.indexOf("."));
+    AppParam.proxyIP = AppParam.proxyIpMap.get(domain) || AppParam.proxyIP;
+
     //console.log(proxyIP);
     AppParam.socks5Address = env.SOCKS5 || AppParam.socks5Address;
     AppParam.socks5s = await CommonUtils.ADD(AppParam.socks5Address);
